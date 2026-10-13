@@ -1,0 +1,480 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interactive Cycling Biomechanics</title>
+    <style>
+        :root {
+            --bg-color: #f4f4f9;
+            --text-color: #333;
+            --card-bg: white;
+            --card-border: #eaeaea;
+            --box-shadow: rgba(0,0,0,0.08);
+            --subtitle-color: #666;
+            --svg-bg: #fff;
+            --svg-border: #e0e0e0;
+            --btn-bg: white;
+            --btn-border: #ccc;
+            --btn-hover: #f0f0f0;
+            --slider-track: #e0e0e0;
+            --pill-bg: #e0e0e0;
+            --desc-bg: #fafafa;
+            --hover-bg: #f0f7ff;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --card-bg: #1e1e1e;
+            --card-border: #333;
+            --box-shadow: rgba(0,0,0,0.5);
+            --subtitle-color: #aaa;
+            --svg-bg: #2a2a2a;
+            --svg-border: #333;
+            --btn-bg: #333;
+            --btn-border: #444;
+            --btn-hover: #444;
+            --slider-track: #444;
+            --pill-bg: #444;
+            --desc-bg: #2a2a2a;
+            --hover-bg: #1a293d;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-color); 
+            padding: 20px; 
+            color: var(--text-color); 
+            max-width: 1100px;
+            margin: 0 auto;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        h2 { text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; margin-bottom: 25px; color: var(--subtitle-color); font-size: 0.95em; transition: color 0.3s;}
+        
+        .container {
+            display: flex;
+            gap: 20px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px var(--box-shadow);
+            align-items: flex-start;
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+
+        .visual-pane {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+        
+        svg { 
+            border: 1px solid var(--svg-border); 
+            border-radius: 8px;
+            background: var(--svg-bg);
+            transition: background 0.3s, border 0.3s;
+        }
+        
+        .interactive-pane {
+            width: 440px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .card {
+            background: var(--desc-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 15px;
+            transition: background 0.3s, border 0.3s;
+        }
+
+        .slider-section h4 {
+            margin: 0 0 8px 0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.05em;
+        }
+
+        /* Custom Slider Styling */
+        input[type=range] { -webkit-appearance: none; width: 100%; margin: 10px 0; background: transparent; }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: var(--slider-track); border-radius: 4px; border: 1px solid var(--card-border); transition: background 0.3s; }
+        input[type=range]::-webkit-slider-thumb { height: 22px; width: 22px; border-radius: 50%; background: #007bff; cursor: pointer; -webkit-appearance: none; margin-top: -7px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+        input[type=range]::-moz-range-track { width: 100%; height: 8px; cursor: pointer; background: var(--slider-track); border-radius: 4px; border: 1px solid var(--card-border); transition: background 0.3s; }
+        input[type=range]::-moz-range-thumb { height: 22px; width: 22px; border-radius: 50%; background: #007bff; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+
+        .speed-section {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--btn-border);
+            background: var(--btn-bg);
+            color: var(--text-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn:hover:not(.active) {
+            background: var(--btn-hover);
+        }
+
+        .btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .desc-section {
+            flex-grow: 1;
+            min-height: 195px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .desc-section.active-hover {
+            background: var(--hover-bg);
+            border-color: #007bff;
+        }
+
+        .desc-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .desc-body {
+            font-size: 0.95em;
+            line-height: 1.5;
+            color: var(--subtitle-color);
+        }
+
+        /* NEW FOOTER & TOGGLES */
+        .desc-footer {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--card-border);
+            justify-content: flex-end;
+            transition: border-color 0.3s;
+        }
+
+        .toggle-pill {
+            display: flex;
+            background: var(--pill-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.3s;
+        }
+
+        .toggle-pill span {
+            padding: 4px 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+            color: var(--subtitle-color);
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .toggle-pill span.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .interactive-muscle {
+            cursor: pointer;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body>
+    <h2>Interactive Muscle Synergy: Pedal Stroke</h2>
+    <div class="subtitle" id="subtitle-text">Use playback, drag the position slider, or hover over muscles in the visualizer to explore biomechanics.</div>
+    
+    <div class="container">
+        <!-- VISUAL LEG MOVEMENT PANE -->
+        <div class="visual-pane">
+            <svg width="550" height="520" id="canvas">
+                <circle cx="280" cy="350" r="80" stroke="var(--svg-border)" stroke-width="2" stroke-dasharray="5,5" fill="none" />
+                <circle cx="280" cy="350" r="10" fill="#444" />
+                <line id="crank" x1="280" y1="350" x2="280" y2="270" stroke="#666" stroke-width="12" stroke-linecap="round" />
+                <circle id="pedal" cx="280" cy="270" r="12" fill="#888" />
+
+                <!-- Base Leg -->
+                <path id="thigh_base" fill="#e0d5c1" />
+                <path id="shin_base" fill="#e0d5c1" />
+                <path id="shoe" fill="#333" />
+
+                <!-- Muscles -->
+                <circle id="glutes" cx="210" cy="110" r="40" fill="purple" class="interactive-muscle" />
+                <path id="quads" fill="#ff3333" class="interactive-muscle" />
+                <path id="hams" fill="#3366ff" class="interactive-muscle" />
+                <path id="calves" fill="#22aa22" class="interactive-muscle" />
+                
+                <!-- Joints -->
+                <circle id="hip" cx="220" cy="120" r="12" fill="#555" />
+                <circle id="knee" r="10" fill="#555" />
+                <circle id="ankle" r="10" fill="#555" />
+            </svg>
+        </div>
+
+        <!-- CONTROLS & DESCRIPTIONS PANE -->
+        <div class="interactive-pane">
+            <!-- SLIDER -->
+            <div class="card slider-section">
+                <h4>
+                    <span id="label-position">Pedal Position</span>
+                    <span><span id="angleValue">0</span>&deg;</span>
+                </h4>
+                <input type="range" id="angleSlider" min="0" max="360" value="0" step="any">
+            </div>
+
+            <!-- SPEED BUTTONS -->
+            <div class="speed-section">
+                <button class="btn" id="btn-pause">⏸ <span class="lbl-pause">Pause</span></button>
+                <button class="btn active" id="btn-05">0.5x</button>
+                <button class="btn" id="btn-1">1x</button>
+                <button class="btn" id="btn-2">2x</button>
+            </div>
+
+            <!-- DESCRIPTION BOARD -->
+            <div class="card desc-section" id="desc-box">
+                <div>
+                    <div class="desc-title" id="desc-title">How to Use</div>
+                    <div class="desc-body" id="desc-body">
+                        Drag the slider, play back at variable speeds, or hover your mouse over the highlighted muscles to view detailed descriptions of their biomechanical functions.
+                    </div>
+                </div>
+                
+                <!-- NEW: Footer with toggles -->
+                <div class="desc-footer">
+                    <div class="toggle-pill" id="lang-toggle">
+                        <span class="active" id="lang-en">EN</span>
+                        <span id="lang-id">IND</span>
+                    </div>
+                    <div class="toggle-pill" id="theme-toggle">
+                        <span class="active" id="theme-light">☀️</span>
+                        <span id="theme-dark">🌙</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const slider = document.getElementById('angleSlider');
+        const angleValue = document.getElementById('angleValue');
+        const descBox = document.getElementById('desc-box');
+        const descTitle = document.getElementById('desc-title');
+        const descBody = document.getElementById('desc-body');
+        
+        const cx = 280, cy = 350, r = 80;
+        const Hx = 220, Hy = 120; 
+        const L1 = 170, L2 = 170; 
+
+        let speed = 0.5; 
+        let isPlaying = true;
+        let lastTimestamp = 0;
+        
+        let currentLang = 'en';
+        let currentMuscle = 'general';
+
+        // Bilingual Dictionary
+        const translationData = {
+            'en': {
+                'glutes': { name: 'Gluteus Maximus (Power Down Phase)', desc: '<b>Otot Bokong:</b> The largest power generator. Incredibly active during the descent of the stroke (0° to 150°). Work with the quads to press through the pedal with force, extending your hip joint.' },
+                'quads': { name: 'Quadriceps (Power Down Phase)', desc: '<b>Otot Paha Depan:</b> Peak activity from the top dead center down to 140°. Exerts vast push force to straighten the knee joint and transfer immense strength down to the pedal.' },
+                'calves': { name: 'Calves (Bottom Snap / Transition Phase)', desc: '<b>Otot Betis (Gastrocnemius & Soleus):</b> Engages at the lower third of the stroke (120° to 220°). Facilitates plantarflexion (pointing the foot down slightly) to pull the foot and pedal backward through the bottom transition smoothly.' },
+                'hams': { name: 'Hamstrings (Upstroke / Recovery Phase)', desc: '<b>Otot Paha Belakang:</b> Major contributor during upward transition (180° to 320°). Flexes the knee to pull the pedal back up back towards the starting position, actively unloading "dead weight" for the other leg.' },
+                'general': { name: 'How to Use', desc: 'Drag the slider, play back at variable speeds, or hover your mouse over the highlighted muscles to view detailed descriptions of their biomechanical functions.' },
+                'ui_subtitle': 'Use playback, drag the position slider, or hover over muscles in the visualizer to explore biomechanics.',
+                'ui_position': 'Pedal Position',
+                'ui_pause': 'Pause'
+            },
+            'id': {
+                'glutes': { name: 'Gluteus Maximus (Fase Dorongan Bawah)', desc: '<b>Otot Bokong:</b> Penghasil tenaga terbesar. Sangat aktif selama kayuhan ke bawah (0° hingga 150°). Bekerja dengan otot paha depan untuk menekan pedal dengan kuat, mengekstensi persendian pinggul.' },
+                'quads': { name: 'Quadriceps (Fase Dorongan Bawah)', desc: '<b>Otot Paha Depan:</b> Aktivitas puncak dari titik tertinggi (0°) turun hingga 140°. Mengeluarkan gaya dorong yang besar untuk meluruskan sendi lutut dan menyalurkan kekuatan besar ke pedal.' },
+                'calves': { name: 'Calves (Sentakan Bawah / Fase Transisi)', desc: '<b>Otot Betis (Gastrocnemius & Soleus):</b> Aktif di sepertiga bawah kayuhan (120° hingga 220°). Memfasilitasi dorongan telapak kaki (plantarflexion) untuk menarik kaki dan pedal ke belakang melalui transisi bawah dengan mulus.' },
+                'hams': { name: 'Hamstrings (Kayuhan Atas / Fase Pemulihan)', desc: '<b>Otot Paha Belakang:</b> Kontributor utama selama transisi ke atas (180° hingga 320°). Menekuk lutut untuk menarik pedal kembali ke posisi awal, secara aktif mengurangi "beban mati" untuk kaki yang lain.' },
+                'general': { name: 'Cara Penggunaan', desc: 'Geser slider, putar dengan berbagai kecepatan, atau arahkan kursor ke otot yang disorot untuk melihat deskripsi fungsi biomekaniknya secara detail.' },
+                'ui_subtitle': 'Gunakan kontrol putar, geser slider posisi, atau arahkan kursor ke otot di visualisator untuk mempelajari biomekanika.',
+                'ui_position': 'Posisi Pedal',
+                'ui_pause': 'Jeda'
+            }
+        };
+
+        function updateUIText() {
+            // Update desc box based on selected lang & current hovered muscle
+            descTitle.innerHTML = translationData[currentLang][currentMuscle].name;
+            descBody.innerHTML = translationData[currentLang][currentMuscle].desc;
+            
+            // Update static labels
+            document.getElementById('subtitle-text').innerText = translationData[currentLang].ui_subtitle;
+            document.getElementById('label-position').innerText = translationData[currentLang].ui_position;
+            document.querySelector('.lbl-pause').innerText = translationData[currentLang].ui_pause;
+        }
+
+        // Toggles logic
+        document.getElementById('lang-toggle').addEventListener('click', (e) => {
+            if (e.target.tagName === 'SPAN') {
+                document.querySelectorAll('#lang-toggle span').forEach(s => s.classList.remove('active'));
+                e.target.classList.add('active');
+                currentLang = e.target.id === 'lang-en' ? 'en' : 'id';
+                updateUIText();
+            }
+        });
+
+        document.getElementById('theme-toggle').addEventListener('click', (e) => {
+            if (e.target.tagName === 'SPAN') {
+                document.querySelectorAll('#theme-toggle span').forEach(s => s.classList.remove('active'));
+                e.target.classList.add('active');
+                if (e.target.id === 'theme-dark') {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+            }
+        });
+
+        // Inverse Kinematics & Rendering
+        function drawMuscle(id, x1, y1, x2, y2, bulgeF, bulgeB, opacity) {
+            let dx = x2 - x1, dy = y2 - y1;
+            let center_x = (x1 + x2) / 2, center_y = (y1 + y2) / 2;
+            let len = Math.sqrt(dx*dx + dy*dy);
+            let nx = dy / len, ny = -dx / len;
+            let path = `M ${x1} ${y1} Q ${center_x + nx*bulgeF} ${center_y + ny*bulgeF} ${x2} ${y2} Q ${center_x - nx*bulgeB} ${center_y - ny*bulgeB} ${x1} ${y1} Z`;
+            let el = document.getElementById(id);
+            if(el) {
+                el.setAttribute('d', path);
+                if (opacity !== undefined) el.setAttribute('opacity', opacity);
+            }
+        }
+
+        function render(deg) {
+            angleValue.innerText = Math.round(deg);
+            let angle = deg * Math.PI / 180;
+            const px = cx + r * Math.sin(angle);
+            const py = cy - r * Math.cos(angle);
+
+            document.getElementById('crank').setAttribute('x2', px); document.getElementById('crank').setAttribute('y2', py);
+            document.getElementById('pedal').setAttribute('cx', px); document.getElementById('pedal').setAttribute('cy', py);
+            document.getElementById('ankle').setAttribute('cx', px); document.getElementById('ankle').setAttribute('cy', py);
+
+            let dx = px - Hx, dy = py - Hy;
+            let d = Math.sqrt(dx*dx + dy*dy);
+            if (d > L1 + L2) d = L1 + L2; 
+            
+            let a = (L1*L1 - L2*L2 + d*d) / (2 * d);
+            let h = Math.sqrt(Math.max(0, L1*L1 - a*a));
+            let P2x = Hx + a * (dx / d), P2y = Hy + a * (dy / d);
+            let Kx = P2x + h * (dy / d), Ky = P2y - h * (dx / d);
+
+            document.getElementById('knee').setAttribute('cx', Kx); document.getElementById('knee').setAttribute('cy', Ky);
+
+            let q_op = Math.max(0.1, Math.sin(angle)) * 0.95; 
+            let h_op = Math.max(0.1, -Math.sin(angle)) * 0.95; 
+            let calf_angle = angle - Math.PI;
+            let c_op = Math.max(0.1, Math.pow(Math.max(0, Math.cos(calf_angle)), 3)) * 0.95;
+            let glute_angle = angle - (Math.PI/4);
+            let g_op = Math.max(0.1, Math.pow(Math.max(0, Math.cos(glute_angle)), 2)) * 0.95;
+
+            drawMuscle('thigh_base', Hx, Hy, Kx, Ky, 45, 35);
+            drawMuscle('shin_base', Kx, Ky, px, py, 15, 35);
+            drawMuscle('quads', Hx, Hy, Kx, Ky, 45, 0, q_op); 
+            drawMuscle('hams', Hx, Hy, Kx, Ky, 0, 35, h_op);  
+            drawMuscle('calves', Kx, Ky, px, py, -10, 35, c_op); 
+            document.getElementById('glutes').setAttribute('opacity', g_op);
+            
+            let shoeTilt = Math.sin(angle) * 10; 
+            let shoePath = `M ${px - 20} ${py + 8 + shoeTilt/2} L ${px + 35} ${py + 8 + shoeTilt} L ${px + 45} ${py - 5 + shoeTilt} L ${px - 15} ${py - 15} Z`;
+            document.getElementById('shoe').setAttribute('d', shoePath);
+        }
+
+        // Animation and Controls
+        function animate(timestamp) {
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            let elapsed = timestamp - lastTimestamp;
+            lastTimestamp = timestamp;
+
+            if (isPlaying) {
+                let currentDeg = parseFloat(slider.value);
+                let speedScale = (speed * 0.06) * elapsed;
+                let nextDeg = (currentDeg + speedScale) % 360;
+                slider.value = nextDeg;
+                render(nextDeg);
+            }
+            requestAnimationFrame(animate);
+        }
+
+        const btnPause = document.getElementById('btn-pause');
+        const btn05 = document.getElementById('btn-05');
+        const btn1 = document.getElementById('btn-1');
+        const btn2 = document.getElementById('btn-2');
+
+        function changeSpeed(selectedSpeed, activeBtn) {
+            speed = selectedSpeed;
+            isPlaying = true;
+            [btnPause, btn05, btn1, btn2].forEach(b => b.classList.remove('active'));
+            activeBtn.classList.add('active');
+        }
+
+        btnPause.addEventListener('click', () => {
+            isPlaying = false;
+            [btnPause, btn05, btn1, btn2].forEach(b => b.classList.remove('active'));
+            btnPause.classList.add('active');
+        });
+
+        btn05.addEventListener('click', () => changeSpeed(0.5, btn05));
+        btn1.addEventListener('click', () => changeSpeed(1.0, btn1));
+        btn2.addEventListener('click', () => changeSpeed(2.0, btn2));
+
+        slider.addEventListener('input', (e) => {
+            render(e.target.value);
+        });
+
+        // Hover Behavior
+        function setHoverBehavior(element, key) {
+            element.addEventListener('mouseenter', () => {
+                currentMuscle = key;
+                updateUIText();
+                descBox.classList.add('active-hover');
+            });
+            
+            element.addEventListener('mouseleave', () => {
+                currentMuscle = 'general';
+                updateUIText();
+                descBox.classList.remove('active-hover');
+            });
+        }
+
+        setHoverBehavior(document.getElementById('glutes'), 'glutes');
+        setHoverBehavior(document.getElementById('quads'), 'quads');
+        setHoverBehavior(document.getElementById('hams'), 'hams');
+        setHoverBehavior(document.getElementById('calves'), 'calves');
+
+        // Init
+        updateUIText();
+        render(0);
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>
